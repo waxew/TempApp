@@ -1,0 +1,71 @@
+name: AlanRang Private Clean Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - alanrang-private-clean-build
+    paths:
+      - 'alanrang_build/**'
+      - '.github/workflows/alanrang-private-clean-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-clean-shell:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build unsigned release APK
+        working-directory: alanrang_build
+        run: gradle :app:assembleRelease --stacktrace --no-daemon
+
+      - name: Verify compiled package identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=$(find alanrang_build/app/build/outputs/apk/release -name '*.apk' -type f | head -n 1)
+          test -n "$APK"
+          echo "APK=$APK"
+          echo "Package: $(apkanalyzer manifest application-id "$APK")"
+          echo "Version name: $(apkanalyzer manifest version-name "$APK")"
+          echo "Version code: $(apkanalyzer manifest version-code "$APK")"
+          test "$(apkanalyzer manifest application-id "$APK")" = "ir.alanrang.pvt"
+          sha256sum "$APK" | tee alanrang_build/UNSIGNED_APK_SHA256.txt
+
+      - name: Package local signing utilities
+        shell: bash
+        run: |
+          set -euo pipefail
+          BT=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          mkdir -p alanrang_build/android-signing-tools
+          cp "$BT/lib/apksigner.jar" alanrang_build/android-signing-tools/
+          cp "$BT/zipalign" alanrang_build/android-signing-tools/
+          cp "$BT/aapt2" alanrang_build/android-signing-tools/
+          chmod +x alanrang_build/android-signing-tools/zipalign alanrang_build/android-signing-tools/aapt2
+          printf '%s\n' "$(basename "$BT")" > alanrang_build/android-signing-tools/BUILD_TOOLS_VERSION.txt
+
+      - name: Upload unsigned clean shell and signing tools
+        uses: actions/upload-artifact@v4
+        with:
+          name: AlanRang-Private-Clean-Shell-RC1
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            alanrang_build/app/build/outputs/apk/release/*.apk
+            alanrang_build/UNSIGNED_APK_SHA256.txt
+            alanrang_build/android-signing-tools/**
