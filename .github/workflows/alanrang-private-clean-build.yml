@@ -40,11 +40,14 @@ jobs:
           set -euo pipefail
           APK=$(find alanrang_build/app/build/outputs/apk/release -name '*.apk' -type f | head -n 1)
           test -n "$APK"
+          BT=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          AAPT="$BT/aapt"
+          BADGING=$("$AAPT" dump badging "$APK" | head -n 1)
           echo "APK=$APK"
-          echo "Package: $(apkanalyzer manifest application-id "$APK")"
-          echo "Version name: $(apkanalyzer manifest version-name "$APK")"
-          echo "Version code: $(apkanalyzer manifest version-code "$APK")"
-          test "$(apkanalyzer manifest application-id "$APK")" = "ir.alanrang.pvt"
+          echo "$BADGING"
+          echo "$BADGING" | grep -q "name='ir.alanrang.pvt'"
+          echo "$BADGING" | grep -q "versionCode='4'"
+          echo "$BADGING" | grep -q "versionName='1.0.0-rc.1'"
           sha256sum "$APK" | tee alanrang_build/UNSIGNED_APK_SHA256.txt
 
       - name: Package local signing utilities
@@ -55,8 +58,9 @@ jobs:
           mkdir -p alanrang_build/android-signing-tools
           cp "$BT/lib/apksigner.jar" alanrang_build/android-signing-tools/
           cp "$BT/zipalign" alanrang_build/android-signing-tools/
+          cp "$BT/aapt" alanrang_build/android-signing-tools/
           cp "$BT/aapt2" alanrang_build/android-signing-tools/
-          chmod +x alanrang_build/android-signing-tools/zipalign alanrang_build/android-signing-tools/aapt2
+          chmod +x alanrang_build/android-signing-tools/zipalign alanrang_build/android-signing-tools/aapt alanrang_build/android-signing-tools/aapt2
           printf '%s\n' "$(basename "$BT")" > alanrang_build/android-signing-tools/BUILD_TOOLS_VERSION.txt
 
       - name: Upload unsigned clean shell and signing tools
