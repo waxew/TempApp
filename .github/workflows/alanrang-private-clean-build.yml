@@ -56,17 +56,21 @@ jobs:
           set -euo pipefail
           BT=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           OUT=alanrang_build/android-signing-tools
-          mkdir -p "$OUT"
+          LIBOUT="$OUT/host-libs"
+          mkdir -p "$LIBOUT"
           cp "$BT/lib/apksigner.jar" "$OUT/"
           cp "$BT/zipalign" "$OUT/"
           cp "$BT/aapt" "$OUT/"
           cp "$BT/aapt2" "$OUT/"
-          LIBCPP=$(find "$ANDROID_HOME" -type f -name 'libc++.so' | head -n 1)
-          test -n "$LIBCPP"
-          cp "$LIBCPP" "$OUT/libc++.so"
           chmod +x "$OUT/zipalign" "$OUT/aapt" "$OUT/aapt2"
           printf '%s\n' "$(basename "$BT")" > "$OUT/BUILD_TOOLS_VERSION.txt"
-          ldd "$BT/zipalign" > "$OUT/zipalign_ldd.txt" || true
+          for BIN in "$BT/zipalign" "$BT/aapt" "$BT/aapt2"; do
+            ldd "$BIN" || true
+            ldd "$BIN" | awk '/=> \/.*\(/ {print $3}' | while read -r LIB; do
+              test -f "$LIB" && cp -L "$LIB" "$LIBOUT/" || true
+            done
+          done
+          test -f "$LIBOUT/libc++.so" || test -f "$LIBOUT/libc++.so.1"
 
       - name: Upload unsigned clean shell and signing tools
         uses: actions/upload-artifact@v4
