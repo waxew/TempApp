@@ -1,0 +1,33 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'ir.alanrang.privateapp'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'ir.alanrang.pvt'
+        minSdk 23
+        targetSdk 34
+        versionCode 4
+        versionName '1.0.0-rc.1'
+    }
+
+    buildTypes {
+        debug { debuggable true }
+        release {
+            debuggable false
+            minifyEnabled false
+        }
+    }
+
+    buildFeatures { buildConfig true }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.13.1'
+}
