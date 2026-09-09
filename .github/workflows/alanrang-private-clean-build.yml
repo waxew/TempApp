@@ -50,7 +50,7 @@ jobs:
           echo "$BADGING" | grep -q "versionName='1.0.0-rc.2'"
           sha256sum "$APK" | tee alanrang_build/UNSIGNED_APK_SHA256.txt
 
-      - name: Package local signing utilities
+      - name: Package local assembly utilities
         shell: bash
         run: |
           set -euo pipefail
@@ -62,6 +62,7 @@ jobs:
           cp "$BT/zipalign" "$OUT/"
           cp "$BT/aapt" "$OUT/"
           cp "$BT/aapt2" "$OUT/"
+          cp "$ANDROID_HOME/platforms/android-34/android.jar" "$OUT/android-34.jar"
           chmod +x "$OUT/zipalign" "$OUT/aapt" "$OUT/aapt2"
           printf '%s\n' "$(basename "$BT")" > "$OUT/BUILD_TOOLS_VERSION.txt"
           for BIN in "$BT/zipalign" "$BT/aapt" "$BT/aapt2"; do
@@ -71,11 +72,12 @@ jobs:
             done
           done
           test -f "$LIBOUT/libc++.so" || test -f "$LIBOUT/libc++.so.1"
+          test -s "$OUT/android-34.jar"
 
-      - name: Upload unsigned clean shell and signing tools
+      - name: Upload clean shell and assembly utilities
         uses: actions/upload-artifact@v4
         with:
-          name: AlanRang-Private-Clean-Shell-RC2
+          name: AlanRang-Private-Clean-Shell-RC2-AssemblyKit
           if-no-files-found: error
           retention-days: 7
           path: |
