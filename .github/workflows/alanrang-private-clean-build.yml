@@ -45,9 +45,9 @@ jobs:
           BADGING=$("$AAPT" dump badging "$APK" | head -n 1)
           echo "APK=$APK"
           echo "$BADGING"
-          echo "$BADGING" | grep -q "name='ir.alanrang.pvt'"
-          echo "$BADGING" | grep -q "versionCode='4'"
-          echo "$BADGING" | grep -q "versionName='1.0.0-rc.1'"
+          echo "$BADGING" | grep -q "name='ir.alanrang.private1405'"
+          echo "$BADGING" | grep -q "versionCode='1405001'"
+          echo "$BADGING" | grep -q "versionName='1.0.0-rc.2'"
           sha256sum "$APK" | tee alanrang_build/UNSIGNED_APK_SHA256.txt
 
       - name: Package local signing utilities
@@ -75,7 +75,7 @@ jobs:
       - name: Upload unsigned clean shell and signing tools
         uses: actions/upload-artifact@v4
         with:
-          name: AlanRang-Private-Clean-Shell-RC1
+          name: AlanRang-Private-Clean-Shell-RC2
           if-no-files-found: error
           retention-days: 7
           path: |
