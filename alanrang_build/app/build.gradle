@@ -5,11 +5,11 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId 'ir.alanrang.pvt'
+        applicationId 'ir.alanrang.private1405'
         minSdk 23
         targetSdk 34
-        versionCode 4
-        versionName '1.0.0-rc.1'
+        versionCode 1405001
+        versionName '1.0.0-rc.2'
     }
 
     buildTypes {
