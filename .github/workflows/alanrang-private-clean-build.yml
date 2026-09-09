@@ -55,13 +55,18 @@ jobs:
         run: |
           set -euo pipefail
           BT=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
-          mkdir -p alanrang_build/android-signing-tools
-          cp "$BT/lib/apksigner.jar" alanrang_build/android-signing-tools/
-          cp "$BT/zipalign" alanrang_build/android-signing-tools/
-          cp "$BT/aapt" alanrang_build/android-signing-tools/
-          cp "$BT/aapt2" alanrang_build/android-signing-tools/
-          chmod +x alanrang_build/android-signing-tools/zipalign alanrang_build/android-signing-tools/aapt alanrang_build/android-signing-tools/aapt2
-          printf '%s\n' "$(basename "$BT")" > alanrang_build/android-signing-tools/BUILD_TOOLS_VERSION.txt
+          OUT=alanrang_build/android-signing-tools
+          mkdir -p "$OUT"
+          cp "$BT/lib/apksigner.jar" "$OUT/"
+          cp "$BT/zipalign" "$OUT/"
+          cp "$BT/aapt" "$OUT/"
+          cp "$BT/aapt2" "$OUT/"
+          LIBCPP=$(find "$ANDROID_HOME" -type f -name 'libc++.so' | head -n 1)
+          test -n "$LIBCPP"
+          cp "$LIBCPP" "$OUT/libc++.so"
+          chmod +x "$OUT/zipalign" "$OUT/aapt" "$OUT/aapt2"
+          printf '%s\n' "$(basename "$BT")" > "$OUT/BUILD_TOOLS_VERSION.txt"
+          ldd "$BT/zipalign" > "$OUT/zipalign_ldd.txt" || true
 
       - name: Upload unsigned clean shell and signing tools
         uses: actions/upload-artifact@v4
