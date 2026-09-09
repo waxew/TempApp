@@ -47,7 +47,7 @@ jobs:
           echo "$BADGING"
           echo "$BADGING" | grep -q "name='ir.alanrang.private1405'"
           echo "$BADGING" | grep -q "versionCode='1405001'"
-          echo "$BADGING" | grep -q "versionName='1.0.0-rc.2'"
+          echo "$BADGING" | grep -q "versionName='1.0.0'"
           sha256sum "$APK" | tee alanrang_build/UNSIGNED_APK_SHA256.txt
 
       - name: Package local assembly utilities
@@ -74,10 +74,10 @@ jobs:
           test -f "$LIBOUT/libc++.so" || test -f "$LIBOUT/libc++.so.1"
           test -s "$OUT/android-34.jar"
 
-      - name: Upload clean shell and assembly utilities
+      - name: Upload stable clean shell and assembly utilities
         uses: actions/upload-artifact@v4
         with:
-          name: AlanRang-Private-Clean-Shell-RC2-AssemblyKit
+          name: AlanRang-Private-Stable-1.0.0-AssemblyKit
           if-no-files-found: error
           retention-days: 7
           path: |
